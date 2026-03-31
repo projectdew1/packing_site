@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme {
+  --font-sans: var(--font-kanit), ui-sans-serif, system-ui, sans-serif;
+  /* Custom colors */
+  --color-brand-blue: #4f1aff;
+  --color-brand-blue-lite: #6b3eff;
+  /* Lighter version of #4f1aff */
+  --color-brand-blue-dark: #3812b3;
+  /* Darker version of #4f1aff */
+  --color-brand-orange: #ff6600;
+  --color-brand-orange-hover: #e65c00;
+  --color-brand-gray: #f4f5f7;
+  --color-brand-dark: #1f2937;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #F8FAFC;
+  color: var(--color-brand-dark);
+}
+
+/* Custom Utilities for smooth animations if needed */
+.glass {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Hide scrollbar for slider */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Load-more: new card fade+slide up */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

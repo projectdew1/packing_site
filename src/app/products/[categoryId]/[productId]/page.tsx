@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+
+if (process.env.NODE_ENV !== "production") {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
 import {
   ChevronRight,
   Phone,
@@ -12,7 +16,7 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { API_URL, API_ROUTES, API_PARAMS, COMPANY } from "@/lib/constants";
+import { IMAGE_URL, API_ROUTES, API_PARAMS, COMPANY } from "@/lib/constants";
 import { ProductDetailAPIResponse, ProductDetail } from "@/models/productDetail";
 import { CategoryApiResponse } from "@/models/category";
 import { CategoryProductAPIResponse } from "@/models/categoryProduct";
@@ -21,37 +25,16 @@ import { ProductHeroImage, ProductImageGrid } from "@/components/ProductImageLig
 /* ── Static Params for export mode ── */
 export async function generateStaticParams() {
   try {
-    // 1. Fetch all categories
-    const catRes = await fetch(API_ROUTES.categories);
-    const catData: CategoryApiResponse = await catRes.json();
-    const categories = catData?.items || [];
-
-    // 2. For each category, fetch its products and collect all machine IDs
-    const allParams: { categoryId: string; productId: string }[] = [];
-
-    for (const category of categories) {
-      try {
-        const url = new URL(API_ROUTES.categoriesFindId);
-        url.searchParams.set(API_PARAMS.name, category.enID);
-        const prodRes = await fetch(url.toString());
-        const prodData: CategoryProductAPIResponse = await prodRes.json();
-
-        if (prodData?.items) {
-          for (const typeGroup of prodData.items) {
-            for (const machine of typeGroup.machine) {
-              allParams.push({
-                categoryId: (category.enID),
-                productId: (machine.id),
-              });
-            }
-          }
-        }
-      } catch {
-        // Skip this category if fetch fails
-      }
+    const res = await fetch(API_ROUTES.allMachineParams);
+    const data = await res.json();
+    
+    if (data?.items) {
+      return data.items.map((item: { param: string }) => {
+        const [categoryId, productId] = item.param.split("/");
+        return { categoryId, productId };
+      });
     }
-
-    return allParams;
+    return [];
   } catch (err) {
     console.error("Error generating static params for products:", err);
     return [];
@@ -64,7 +47,7 @@ async function getProductDetail(id: string): Promise<ProductDetailAPIResponse | 
     const url = new URL(API_ROUTES.productsId);
     url.searchParams.set(API_PARAMS.id, decodeURIComponent(id));
     const res = await fetch(url.toString(), {
-      next: { revalidate: 3600 },
+      next: { revalidate: 0 },
     });
     const data: ProductDetailAPIResponse = await res.json();
     if (data.status !== 200) return undefined;
@@ -128,9 +111,9 @@ export default async function ProductDetailPage({
 
   // Build gallery: main image + additional images
   const allImages = [
-    { src: `${API_URL}${product.localImage}`, alt: product.machineName },
+    { src: `${IMAGE_URL}${product.localImage}`, alt: product.machineName },
     ...product.image.map((img) => ({
-      src: `${API_URL}${img.local}`,
+      src: `${IMAGE_URL}${img.local}`,
       alt: `${product.machineName} - ${img.imageMachineId}`,
     })),
   ];
@@ -170,7 +153,7 @@ export default async function ProductDetailPage({
               {/* Left: Image Gallery — Interactive with Lightbox */}
               <ProductHeroImage
                 allImages={allImages}
-                mainImageSrc={`${API_URL}${product.localImage}`}
+                mainImageSrc={`${IMAGE_URL}${product.localImage}`}
                 mainImageAlt={product.machineName}
                 isSoldout={isSoldout}
                 hasDiscount={hasDiscount}
@@ -239,18 +222,27 @@ export default async function ProductDetailPage({
                     </div>
                   )}
                 </div>
+                {/* Explain (Brief Intro) */}
+                {product.explain?.name && (
+                  <div className="mb-6">
+                    <p className="text-[14.5px] text-slate-600 leading-relaxed whitespace-pre-line border-l-4 border-[var(--color-brand-blue)]/20 pl-4 py-1 italic bg-slate-50/50 rounded-r-xl">
+                      {product.explain.name}
+                    </p>
+                  </div>
+                )}
 
                 {/* Features / Detail list */}
                 {product.detail.length > 0 && (
                   <div className="mb-6">
-                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">
-                      คุณสมบัติเด่น
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                       <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand-orange)]" />
+                       คุณสมบัติเด่น
                     </h3>
-                    <ul className="space-y-2.5">
-                      {product.detail.map((d) => (
-                        <li key={d.detailMachineId} className="flex items-start gap-3">
+                    <ul className="grid grid-cols-1 gap-2.5">
+                      {product.detail.map((d, idx) => (
+                        <li key={d.id || d.detailMachineId || idx} className="flex items-start gap-3 bg-slate-50/30 p-2.5 rounded-xl border border-transparent hover:border-blue-100 hover:bg-blue-50/50 transition-all duration-300">
                           <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-slate-700 text-[15px] leading-relaxed">{d.detail}</span>
+                          <span className="text-slate-700 text-[14px] font-medium leading-relaxed">{d.detail}</span>
                         </li>
                       ))}
                     </ul>
@@ -312,7 +304,7 @@ export default async function ProductDetailPage({
               <div className="divide-y divide-gray-50">
                 {product.detailTech.map((spec, idx) => (
                   <div
-                    key={spec.detailTechMachineId}
+                    key={spec.detailTechMachineId || idx}
                     className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 px-6 py-4 ${
                       idx % 2 === 0 ? "bg-white" : "bg-slate-50/50"
                     } hover:bg-blue-50/30 transition-colors`}
@@ -379,7 +371,7 @@ export default async function ProductDetailPage({
               <div className="p-6">
                 <ProductImageGrid
                   images={product.image.map((img) => ({
-                    src: `${API_URL}${img.local}`,
+                    src: `${IMAGE_URL}${img.local}`,
                     alt: `${product.machineName}`,
                   }))}
                   productName={product.machineName}

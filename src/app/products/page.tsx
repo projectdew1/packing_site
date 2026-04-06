@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ChevronRight, Package } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { API_URL, API_ROUTES } from "@/lib/constants";
+import { IMAGE_URL, API_ROUTES } from "@/lib/constants";
 import { ApiCategory, CategoryApiResponse } from "@/models/category";
 
 export const metadata = {
@@ -60,7 +60,7 @@ export default async function ProductsPage() {
             >
               <div className="relative aspect-square bg-slate-50 overflow-hidden p-6 flex items-center justify-center">
                 <img
-                  src={category.localImage ? `${API_URL}${category.localImage}` : "/product_machine_1773729790893.png"}
+                  src={category.localImage ? `${IMAGE_URL}${category.localImage}` : "/product_machine_1773729790893.png"}
                   alt={category.name}
                   className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
                 />

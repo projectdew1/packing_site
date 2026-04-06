@@ -1,12 +1,41 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { MapPin, Truck, Images, ArrowRight } from "lucide-react";
-import { DELIVERY_JOBS } from "@/lib/deliveryData";
+import { API_ROUTES, IMAGE_URL } from "@/lib/constants";
+
+if (typeof window === "undefined") {
+  if (process.env.NODE_ENV !== "production") {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+  }
+}
 
 const PREVIEW_COUNT = 3;
 
 export default function DeliverySection() {
-  const previews = DELIVERY_JOBS.slice(0, PREVIEW_COUNT);
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPreviews = async () => {
+      try {
+        const res = await fetch(`${API_ROUTES.portfolio}?pageNumber=1&pageSize=${PREVIEW_COUNT}`, {
+          method: "GET"
+        });
+        const data = await res.json();
+        if (data.items) {
+          setJobs(data.items);
+        }
+      } catch (e) {
+        console.error("Failed to fetch delivery previews:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPreviews();
+  }, []);
 
   return (
     <section className="py-16 lg:py-24 bg-white">
@@ -37,49 +66,59 @@ export default function DeliverySection() {
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {previews.map((job: any, idx: any) => (
-            <Link
-              key={job.id}
-              href="/delivery"
-              className="group relative overflow-hidden rounded-2xl shadow-sm ring-1 ring-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 block"
-            >
-              {/* Image */}
-              <div className="relative h-52 overflow-hidden bg-slate-200">
-                <Image
-                  src={job.cover}
-                  alt={`จัดส่งสินค้า ${job.location}`}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 ">
+          {isLoading ? (
+            Array.from({ length: PREVIEW_COUNT }).map((_, i) => (
+              <div key={i} className="h-52 rounded-2xl bg-slate-100 animate-pulse" />
+            ))
+          ) : jobs.length === 0 ? (
+            <div className="col-span-full py-20 text-center text-slate-400">
+              ไม่มีข้อมูลการจัดส่งในขณะนี้
+            </div>
+          ) : (
+            jobs.map((job: any) => (
+              <Link
+                key={job.id}
+                href="/delivery"
+                className="group relative overflow-hidden rounded-2xl shadow-sm ring-1 ring-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 block"
+              >
+                {/* Image */}
+                <div className="relative h-52 overflow-hidden bg-slate-200">
+                  <Image
+                    src={job.localImage ? `${IMAGE_URL}${job.localImage}` : "/product_machine_1773729790893.png"}
+                    alt={`จัดส่งสินค้า ${job.privinceTh}`}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
 
-                {/* Location badge */}
-                <div className="absolute top-3 left-3">
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">
-                    <MapPin className="w-3 h-3 text-[var(--color-brand-orange)]" />
-                    <span className="text-xs font-bold text-slate-800">{job.location}</span>
+                  {/* Location badge */}
+                  <div className="absolute top-3 left-3">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm">
+                      <MapPin className="w-3 h-3 text-[var(--color-brand-orange)]" />
+                      <span className="text-xs font-bold text-slate-800">{job.privinceTh}</span>
+                    </div>
+                  </div>
+
+                  {/* Photo count */}
+                  <div className="absolute top-3 right-3">
+                    <div className="flex items-center gap-1 px-2.5 py-1.5 bg-black/50 backdrop-blur-sm rounded-full">
+                      <Images className="w-3 h-3 text-white" />
+                      <span className="text-xs font-bold text-white">{job.imageList?.length || 0}</span>
+                    </div>
+                  </div>
+
+                  {/* Bottom info */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <p className="text-white font-bold text-sm leading-snug line-clamp-1">{job.title}</p>
+                    <p className="text-white/60 text-xs mt-0.5 line-clamp-1">{job.machineName}</p>
                   </div>
                 </div>
-
-                {/* Photo count */}
-                <div className="absolute top-3 right-3">
-                  <div className="flex items-center gap-1 px-2.5 py-1.5 bg-black/50 backdrop-blur-sm rounded-full">
-                    <Images className="w-3 h-3 text-white" />
-                    <span className="text-xs font-bold text-white">{job.images.length}</span>
-                  </div>
-                </div>
-
-                {/* Bottom info */}
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <p className="text-white font-bold text-sm leading-snug line-clamp-1">{job.customer}</p>
-                  <p className="text-white/60 text-xs mt-0.5 line-clamp-1">{job.machine}</p>
-                </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))
+          )}
         </div>
 
         {/* Bottom CTA */}

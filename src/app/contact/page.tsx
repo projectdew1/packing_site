@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { MapPin, Phone, Mail, Clock, Send, MessageCircle, ArrowRight, Headphones, ExternalLink, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { COMPANY, CONTACT_INFO, CONTACT_SUBJECTS } from "@/lib/constants";
+import { COMPANY, CONTACT_INFO, CONTACT_SUBJECTS, API_ROUTES } from "@/lib/constants";
 import type { ReactNode } from "react";
 
 /* ── Icon map for dynamic rendering ── */
@@ -32,13 +32,41 @@ export default function ContactPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.subject) {
+      alert("กรุณาเลือกหัวข้อการติดต่อ");
+      return;
+    }
+    
     setIsSending(true);
-    setTimeout(() => {
+    try {
+      // Find the label for the selected subject
+      const subjectLabel = CONTACT_SUBJECTS.find(s => s.value === formData.subject)?.label || formData.subject;
+
+      const url = new URL(API_ROUTES.addContact);
+      url.searchParams.set("name", formData.name);
+      url.searchParams.set("mail", formData.email);
+      url.searchParams.set("tel", formData.phone);
+      url.searchParams.set("title", subjectLabel);
+      url.searchParams.set("detail", formData.message);
+
+      const res = await fetch(url.toString(), {
+        method: "POST"
+      });
+      
+      const data = await res.json();
+      if (data.status === 200) {
+        setIsSent(true);
+      } else {
+        alert("ขออภัย เกิดข้อผิดพลาดในการส่งข้อมูล: " + (data.message || "โปรดลองอีกครั้ง"));
+      }
+    } catch (error) {
+      console.error("Error sending contact:", error);
+      alert("ขออภัย ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ในขณะนี้");
+    } finally {
       setIsSending(false);
-      setIsSent(true);
-    }, 1500);
+    }
   };
 
   return (

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { PhoneCall, Menu, X, Package, Truck, PenTool, Newspaper, BookOpen, ChevronDown } from "lucide-react";
-import { NAV_LINKS, COMPANY, API_URL, API_ROUTES } from "@/lib/constants";
+import { NAV_LINKS, COMPANY, IMAGE_URL, API_ROUTES } from "@/lib/constants";
 import { ApiCategory, CategoryApiResponse } from "@/models/category";
 
 const iconMap = {
@@ -19,6 +19,7 @@ const iconMap = {
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     fetch(API_ROUTES.categories)
@@ -29,6 +30,15 @@ export default function Navbar() {
         }
       })
       .catch((err) => console.log("Failed to load header categories:", err));
+  }, []);
+
+  // Handle scroll for navbar appearance
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Prevent body scroll when mobile menu is open
@@ -54,7 +64,11 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full glass shadow-sm border-b border-gray-200/50">
+      <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+        isScrolled 
+          ? "bg-white/80 backdrop-blur-lg shadow-md border-b border-gray-200/50" 
+          : "bg-white border-b border-transparent"
+      }`}>
         <div className="container mx-auto px-4 lg:px-8 h-20 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -90,7 +104,7 @@ export default function Navbar() {
                          {categories.map((c) => (
                            <Link key={c.id} href={`/products/${c.enID}`} className="flex items-center gap-2 p-1 hover:bg-slate-50 rounded-lg transition-colors group/item shrink-0">
                              <div className="w-7 h-7 rounded bg-slate-50 flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-50/50">
-                               <img src={c.localImage ? `${API_URL}${c.localImage}` : "/product_machine_1773729790893.png"} alt={c.name} className="max-w-full max-h-full object-contain mix-blend-multiply group-hover/item:scale-110 transition-transform" />
+                               <img src={c.localImage ? `${IMAGE_URL}${c.localImage}` : "/product_machine_1773729790893.png"} alt={c.name} className="max-w-full max-h-full object-contain mix-blend-multiply group-hover/item:scale-110 transition-transform" />
                              </div>
                              <span className="text-[10.5px] text-slate-600 font-medium line-clamp-1 leading-tight group-hover/item:text-[var(--color-brand-blue)] transition-colors">{c.name}</span>
                            </Link>

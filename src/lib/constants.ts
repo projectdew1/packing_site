@@ -1,4 +1,10 @@
-export const API_URL = "https://kmspacking.com:5003";
+import {
+  Truck, CheckCircle2, Clock, Shield,
+} from "lucide-react";
+
+// export const API_URL = "https://kmspacking.com:5003";
+export const API_URL = "https://localhost:5001";
+export const IMAGE_URL = "https://kmspacking.com:5003";
 
 export const API_PARAMS = {
   name: 'name',
@@ -9,6 +15,13 @@ export const API_ROUTES = {
   categories: `${API_URL}/api/page/header`,
   categoriesFindId: `${API_URL}/api/page/idHeader`,
   productsId: `${API_URL}/api/page/idproduct`,
+  news: `${API_URL}/api/News/getNews`,
+  newsIds: `${API_URL}/api/News/findNewsIdShow`,
+  newsDetail: `${API_URL}/api/News/findNewsShow`,
+  portfolio: `${API_URL}/api/Portfolio/getPortfolio`,
+  addContact: `${API_URL}/api/Contact/addContact`,
+  productRecommend: `${API_URL}/api/Product/getRecommend`,
+  allMachineParams: `${API_URL}/api/Product/getAllMachineParams`,
 };
 
 // ===================================
@@ -22,6 +35,7 @@ export const COMPANY = {
   descriptionFull:
     "บริษัท เคเอ็มเอส แมชชีนเนอรี่ จำกัด ศูนย์รวมและจัดจำหน่ายเครื่องบรรจุภัณฑ์ อุตสาหกรรม บริการด้วยใจ ซื่อสัตย์ ได้มาตรฐาน",
   phone: "034-116655",
+  email: "kmsmachinery@hotmail.com",
   contacts: [
     { mobile: "095-456-5550", name: "คุณกิตติกร" },
     { mobile: "062-696-8999", name: "คุณแหม่ม" },
@@ -29,7 +43,10 @@ export const COMPANY = {
   ],
   address: "1/46 หมู่ที่ 6 อำเภอกระทุ่มแบน จังหวัดสมุทรสาคร 74130",
   lineId: "@kmsmachinery",
-  lineUrl: "https://line.me/ti/p/",
+  lineUrl: "https://line.me/ti/p/@kmsmachinery",
+  facebookUrl: "https://www.facebook.com/kmsmachinerythailand",
+  tiktokUrl: "https://www.tiktok.com/@kmsmachinery",
+  youtubeUrl: "https://www.youtube.com/@kmsmachinery4363",
   workingHours: "จันทร์ - เสาร์: 08:30 - 17:30 น.",
   googleMapsEmbed:
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3876.2040244647633!2d100.3046618!3d13.7060896!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30e295e27d572fb9%3A0x46f8115383270857!2z4Lia4Lij4Li04Lip4Lix4LiXIOC5gOC4hOC5gOC4reC5h-C4oeC5gOC4reC4qiDguYHguKHguIrguIrguLXguJnguYDguJnguK3guKPguLXguYgg4LiI4Liz4LiB4Lix4LiU!5e0!3m2!1sth!2sth!4v1773755462401!5m2!1sth!2sth",
@@ -47,10 +64,10 @@ export interface NavLink {
 export const NAV_LINKS: NavLink[] = [
 
   { href: "/products", label: "ผลิตภัณฑ์", iconName: "Truck" },
-  { href: "/delivery", label: "การจัดส่ง", iconName: "Package" },
   { href: "/about", label: "เกี่ยวกับ KMS", iconName: "PenTool" },
+  { href: "/delivery", label: "การจัดส่ง", iconName: "Package" },
   { href: "/blog", label: "บทความ", iconName: "BookOpen" },
-  { href: "/contact", label: "ติดต่อเรา", iconName: "Newspaper" },
+  // { href: "/contact", label: "ติดต่อเรา", iconName: "Newspaper" },
 ];
 
 export const FOOTER_MAIN_LINKS = [
@@ -63,8 +80,9 @@ export const FOOTER_MAIN_LINKS = [
 
 export const FOOTER_SERVICE_LINKS = [
   { href: "/delivery", label: "การจัดส่งสินค้า" },
-  { href: "#", label: "เงื่อนไขการรับประกัน" },
-  { href: "#", label: "แจ้งซ่อม" },
+  // { href: "#", label: "เงื่อนไขการรับประกัน" },
+  { href: "/contact", label: "แจ้งซ่อม" },
+  { href: "/terms-of-service", label: "ข้อกำหนดและเงื่อนไข" },
   { href: "/privacy-policy", label: "นโยบายความเป็นส่วนตัว" },
 ];
 
@@ -215,6 +233,17 @@ export const CONTACT_SUBJECTS = [
   { value: "consult", label: "ปรึกษาการเลือกเครื่องจักร" },
   { value: "service", label: "บริการซ่อม / อะไหล่" },
   { value: "other", label: "อื่นๆ" },
+];
+
+// ===================================
+// Delivery Data
+// ===================================
+
+export const DELIVERY_FEATURES = [
+  { icon: Truck, title: "ทีมขนส่งมืออาชีพ", desc: "รถขนส่งเฉพาะทางพร้อมอุปกรณ์ยกสินค้าหนัก ดูแลเครื่องจักรอย่างปลอดภัย" },
+  { icon: Clock, title: "นัดหมายเวลาได้", desc: "สามารถนัดหมายวันและเวลาจัดส่งที่สะดวก เพื่อให้โรงงานเตรียมพร้อมรับสินค้า" },
+  { icon: Shield, title: "ประกันระหว่างขนส่ง", desc: "เครื่องจักรทุกชิ้นมีประกันความเสียหายระหว่างการขนส่งครอบคลุมทุกจังหวัด" },
+  { icon: CheckCircle2, title: "ติดตั้งและเทรนนิ่ง", desc: "ทีมวิศวกรติดตั้งเครื่องจักรพร้อมสอนการใช้งานถึงหน้าโรงงาน ไม่มีค่าใช้จ่ายเพิ่ม" },
 ];
 
 // ===================================

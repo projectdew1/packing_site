@@ -6,45 +6,74 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { CalendarDays, Clock, ArrowRight, BookOpen, Megaphone, ChevronDown, Loader2 } from "lucide-react";
-import { BLOG_POSTS, BLOG_CATEGORIES, type BlogCategory } from "@/lib/constants";
+import { BLOG_CATEGORIES, type BlogCategory, type BlogPost, API_ROUTES, IMAGE_URL } from "@/lib/constants";
 
 const POSTS_PER_PAGE = 6;
 
 export default function BlogPage() {
   const [activeTab, setActiveTab] = useState<BlogCategory>("all");
-  const [visibleCount, setVisibleCount] = useState(POSTS_PER_PAGE);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [totalPosts, setTotalPosts] = useState(0);
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
+  const fetchNews = async (pageNum: number, category: string, isLoadMore = false) => {
+    try {
+      if (isLoadMore) {
+        setIsFetchingMore(true);
+      } else {
+        setIsLoading(true);
+      }
+      const res = await fetch(`${API_ROUTES.news}?pageNumber=${pageNum}&pageSize=${POSTS_PER_PAGE}&type=${category}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+      const data = await res.json();
+      
+      const mappedPosts: BlogPost[] = (data.items || []).map((item: any) => ({
+        slug: item.id,
+        title: item.title,
+        excerpt: item.subtitle,
+        category: item.typeNews === "ข่าวสาร" ? "news" : "article",
+        date: item.createDate,
+        image: item.localImage ? `${IMAGE_URL}${item.localImage}` : "/product_machine_1773729790893.png",
+        content: item.subtitle,
+      }));
+
+      if (isLoadMore) {
+        setPosts((prev) => [...prev, ...mappedPosts]);
+      } else {
+        setPosts(mappedPosts);
+      }
+      setTotalPosts(data.totalItems || 0);
+    } catch (error) {
+      console.error("Error fetching news:", error);
+    } finally {
       setIsLoading(false);
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [activeTab]); // trigger skeleton on mount and tab change
+      setIsFetchingMore(false);
+    }
+  };
 
-  const filteredPosts = activeTab === "all"
-    ? BLOG_POSTS
-    : BLOG_POSTS.filter((p) => p.category === activeTab);
-
-  const visiblePosts = filteredPosts.slice(0, visibleCount);
-  const hasMore = visibleCount < filteredPosts.length;
-  const remaining = filteredPosts.length - visibleCount;
+  useEffect(() => {
+    fetchNews(1, activeTab, false);
+  }, [activeTab]);
 
   const handleTabChange = (tab: BlogCategory) => {
     if (tab === activeTab) return;
-    setIsLoading(true);
     setActiveTab(tab);
-    setVisibleCount(POSTS_PER_PAGE);
+    setPage(1);
   };
 
   const handleLoadMore = () => {
-    setIsFetchingMore(true);
-    setTimeout(() => {
-      setVisibleCount((prev) => prev + POSTS_PER_PAGE);
-      setIsFetchingMore(false);
-    }, 600);
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchNews(nextPage, activeTab, true);
   };
+
+  const visiblePosts = posts;
+  const hasMore = posts.length < totalPosts;
+  const remaining = totalPosts - posts.length;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -97,10 +126,10 @@ export default function BlogPage() {
 
             {/* Results count */}
             <p className="text-sm text-slate-400 font-medium mb-8 text-center">
-              แสดง {visiblePosts.length} จาก {filteredPosts.length} รายการ
+              แสดง {visiblePosts.length} จาก {totalPosts} รายการ
             </p>
 
-            {filteredPosts.length === 0 ? (
+            {!isLoading && totalPosts === 0 ? (
               <div className="text-center py-20 text-slate-400">
                 <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-40" />
                 <p className="text-lg font-medium">ยังไม่มีเนื้อหาในหมวดนี้</p>
@@ -166,10 +195,6 @@ export default function BlogPage() {
                             <span className="inline-flex items-center gap-1">
                               <CalendarDays className="w-3.5 h-3.5" />
                               {new Date(post.date).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" })}
-                            </span>
-                            <span className="inline-flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5" />
-                              {post.readTime}
                             </span>
                           </div>
 

@@ -26,7 +26,7 @@ export interface ProductDetail {
   type: ProductType;
   detailTech: DetailTech[];
   detail: DetailItem[];
-  explain: ExplainItem[];
+  explain: any; // API returns an object or null
   image: ImageItem[];
   manual: ManualItem[];
   video: VideoItem[];
@@ -49,6 +49,7 @@ export interface DetailTech {
 export interface DetailItem {
   machineId: string;
   detailMachineId: string;
+  id: string | null;
   detail: string;
   createDate: string | null;
   createUser: string | null;

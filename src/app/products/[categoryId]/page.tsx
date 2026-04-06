@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Layers, Tag, Phone, Eye } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { API_URL, API_ROUTES, API_PARAMS } from "@/lib/constants";
+import { IMAGE_URL, API_ROUTES, API_PARAMS } from "@/lib/constants";
 import { ApiCategory, CategoryApiResponse } from "@/models/category";
 import { CategoryProductAPIResponse, Item, Machine } from "@/models/categoryProduct";
 
@@ -106,7 +106,7 @@ function MachineCard({ machine, categoryId }: { machine: Machine; categoryId: st
       <div className="relative aspect-square w-full bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-5 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(79,26,255,0.03),transparent_70%)]" />
         <img
-          src={machine.localImage ? `${API_URL}${machine.localImage}` : "/product_machine_1773729790893.png"}
+          src={machine.localImage ? `${IMAGE_URL}${machine.localImage}` : "/product_machine_1773729790893.png"}
           alt={machine.machineName}
           className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out relative z-10 mix-blend-multiply"
         />
@@ -195,7 +195,7 @@ export default async function CategoryProductsPage({ params }: { params: Promise
           <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
             <div className="w-full md:w-1/3 aspect-[4/3] relative rounded-xl overflow-hidden shadow-sm bg-gray-100 p-6 flex items-center justify-center">
               <img 
-                src={category.localImage ? `${API_URL}${category.localImage}` : "/product_machine_1773729790893.png"} 
+                src={category.localImage ? `${IMAGE_URL}${category.localImage}` : "/product_machine_1773729790893.png"} 
                 alt={category.name} 
                 className="w-full h-full object-contain mix-blend-multiply" 
               />

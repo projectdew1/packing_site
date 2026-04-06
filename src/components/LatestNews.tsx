@@ -1,13 +1,69 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { CalendarDays, Clock, ArrowRight, BookOpen, Megaphone } from "lucide-react";
-import { BLOG_POSTS } from "@/lib/constants";
+import { CalendarDays, Clock, ArrowRight, BookOpen, Megaphone, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { API_ROUTES, IMAGE_URL, type BlogPost } from "@/lib/constants";
 
 export default function LatestNews() {
-  // Show the 3 most recent posts
-  const latestPosts = BLOG_POSTS.slice(0, 3);
-  const featuredPost = latestPosts[0];
-  const sidePosts = latestPosts.slice(1);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLatestNews = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(`${API_ROUTES.news}?pageNumber=1&pageSize=3&type=all`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        });
+        const data = await res.json();
+        
+        const mappedPosts: BlogPost[] = (data.items || []).map((item: any) => ({
+          slug: item.id,
+          title: item.title,
+          excerpt: item.subtitle,
+          category: item.typeNews === "ข่าวสาร" ? "news" : "article",
+          date: item.createDate,
+          image: item.localImage ? `${IMAGE_URL}${item.localImage}` : "/product_machine_1773729790893.png",
+          content: item.subtitle,
+          readTime: "อ่านต่อ", // API doesn't provide readTime
+        }));
+
+        setPosts(mappedPosts);
+      } catch (error) {
+        console.error("Error fetching latest news:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLatestNews();
+  }, []);
+
+  const featuredPost = posts[0];
+  const sidePosts = posts.slice(1);
+
+  if (isLoading) {
+    return (
+      <section className="py-24 bg-white relative overflow-hidden">
+        <div className="container mx-auto px-4 lg:px-8 text-center animate-pulse">
+           <div className="h-4 bg-slate-100 rounded w-24 mx-auto mb-4" />
+           <div className="h-10 bg-slate-100 rounded w-64 mx-auto mb-14" />
+           <div className="grid lg:grid-cols-2 gap-8">
+              <div className="aspect-[16/10] bg-slate-50 rounded-3xl" />
+              <div className="flex flex-col gap-6">
+                 <div className="aspect-[21/9] bg-slate-50 rounded-2xl" />
+                 <div className="aspect-[21/9] bg-slate-50 rounded-2xl" />
+              </div>
+           </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (posts.length === 0) return null;
 
   return (
     <section className="py-24 bg-white relative overflow-hidden">
@@ -75,10 +131,6 @@ export default function LatestNews() {
                     <CalendarDays className="w-3.5 h-3.5" />
                     {new Date(featuredPost.date).toLocaleDateString("th-TH", { year: "numeric", month: "long", day: "numeric" })}
                   </span>
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    {featuredPost.readTime}
-                  </span>
                 </div>
 
                 <h4 className="font-extrabold text-xl md:text-2xl text-slate-800 group-hover:text-[var(--color-brand-blue)] transition-colors leading-snug mb-3 line-clamp-2 tracking-tight">
@@ -136,16 +188,12 @@ export default function LatestNews() {
                       <CalendarDays className="w-3 h-3" />
                       {new Date(post.date).toLocaleDateString("th-TH", { year: "numeric", month: "short", day: "numeric" })}
                     </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {post.readTime}
-                    </span>
                   </div>
 
                   <h4 className="font-bold text-base text-slate-800 group-hover:text-[var(--color-brand-blue)] transition-colors leading-snug mb-2 line-clamp-2">
                     {post.title}
                   </h4>
-                  <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 hidden md:block">
+                  <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 mb-2">
                     {post.excerpt}
                   </p>
 

@@ -4,23 +4,24 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Image from "next/image";
 import {
-  Truck, MapPin, CheckCircle2, Clock, Shield, Phone,
+  Truck, MapPin,  Phone,
   X, ChevronLeft, ChevronRight, ZoomIn, Plus, Images,
 } from "lucide-react";
-import { COMPANY } from "@/lib/constants";
-import { DELIVERY_JOBS, type DeliveryJob } from "@/lib/deliveryData";
+import { COMPANY, DELIVERY_FEATURES, API_ROUTES, IMAGE_URL } from "@/lib/constants";
+import { type DeliveryJob } from "@/lib/deliveryData";
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+
+if (typeof window === "undefined") {
+  if (process.env.NODE_ENV !== "production") {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+  }
+}
 
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE = 6;
 
-const DELIVERY_FEATURES = [
-  { icon: Truck,        title: "ทีมขนส่งมืออาชีพ",   desc: "รถขนส่งเฉพาะทางพร้อมอุปกรณ์ยกสินค้าหนัก ดูแลเครื่องจักรอย่างปลอดภัย" },
-  { icon: Clock,        title: "นัดหมายเวลาได้",      desc: "สามารถนัดหมายวันและเวลาจัดส่งที่สะดวก เพื่อให้โรงงานเตรียมพร้อมรับสินค้า" },
-  { icon: Shield,       title: "ประกันระหว่างขนส่ง",  desc: "เครื่องจักรทุกชิ้นมีประกันความเสียหายระหว่างการขนส่งครอบคลุมทุกจังหวัด" },
-  { icon: CheckCircle2, title: "ติดตั้งและเทรนนิ่ง", desc: "ทีมวิศวกรติดตั้งเครื่องจักรพร้อมสอนการใช้งานถึงหน้าโรงงาน ไม่มีค่าใช้จ่ายเพิ่ม" },
-];
+
 
 // ===================================
 // Lightbox — shows all images of ONE job
@@ -73,7 +74,7 @@ function JobLightbox({
               src={job.images[imgIdx]}
               alt={`${job.location} — ${job.customer} รูปที่ ${imgIdx + 1}`}
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="(max-width: 1024px) 100vw, 60vw"
               priority
             />
@@ -129,7 +130,7 @@ function JobLightbox({
               </div>
               <div className="border-t border-white/10 pt-2.5">
                 <p className="text-slate-500 text-xs uppercase tracking-wider mb-1">เครื่องจักรที่จัดส่ง</p>
-                <p className="text-sky-300 font-semibold text-sm leading-relaxed">{job.machine}</p>
+                <Link href={`/products/${job.link}`} className="text-sky-300 font-semibold text-sm leading-relaxed cursor-pointer">{job.machine}</Link>
               </div>
             </div>
 
@@ -185,29 +186,74 @@ function JobLightbox({
 // ===================================
 export default function DeliveryPage() {
   const [activeJob, setActiveJob] = useState<DeliveryJob | null>(null);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const [isLoading, setIsLoading] = useState(false);
+  const [jobs, setJobs] = useState<DeliveryJob[]>([]);
+  const [totalJobs, setTotalJobs] = useState(0);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [newlyLoaded, setNewlyLoaded] = useState<Set<number>>(new Set());
+  const [lastBatchLen, setLastBatchLen] = useState(0);
 
-  const handleLoadMore = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      const nextCount = visibleCount + PAGE_SIZE;
-      const newIdxs = new Set<number>();
-      for (let i = visibleCount; i < Math.min(nextCount, DELIVERY_JOBS.length); i++) {
-        newIdxs.add(i);
+  const fetchJobs = async (pageNum: number, isLoadMore = false) => {
+    try {
+      if (isLoadMore) {
+        setIsFetchingMore(true);
+      } else {
+        setIsLoading(true);
       }
-      setNewlyLoaded(newIdxs);
-      setVisibleCount(nextCount);
+      const res = await fetch(`${API_ROUTES.portfolio}?pageNumber=${pageNum}&pageSize=${PAGE_SIZE}`, {
+        method: "GET"
+      });
+      const data = await res.json();
+      
+      const mappedJobs: DeliveryJob[] = (data.items || []).map((item: any) => ({
+        id: item.id,
+        location: item.privinceTh,
+        customer: item.title,
+        machine: item.machineName,
+        link: item.link,
+        date: new Date(item.deliveryDate).toLocaleDateString("th-TH", { year: "numeric", month: "short" }),
+        cover: item.localImage ? `${IMAGE_URL}${item.localImage}` : "/product_machine_1773729790893.png",
+        images: item.imageList && item.imageList.length > 0
+          ? item.imageList.map((img: any) => `${IMAGE_URL}${img.local}`)
+          : [item.localImage ? `${IMAGE_URL}${item.localImage}` : "/product_machine_1773729790893.png"]
+      }));
+
+      if (isLoadMore) {
+        setLastBatchLen(mappedJobs.length);
+        const startIdx = jobs.length;
+        const newIdxs = new Set<number>();
+        mappedJobs.forEach((_, i) => newIdxs.add(startIdx + i));
+        
+        setJobs((prev) => [...prev, ...mappedJobs]);
+        setNewlyLoaded(newIdxs);
+        setTimeout(() => setNewlyLoaded(new Set()), 800);
+      } else {
+        setJobs(mappedJobs);
+        setLastBatchLen(mappedJobs.length);
+      }
+      setTotalJobs(data.totalItems || 0);
+    } catch (error) {
+      console.error("Error fetching portfolio:", error);
+    } finally {
       setIsLoading(false);
-      // clear highlight after animation
-      setTimeout(() => setNewlyLoaded(new Set()), 800);
-    }, 1200);
+      setIsFetchingMore(false);
+    }
   };
 
-  const visibleJobs = DELIVERY_JOBS.slice(0, visibleCount);
-  const hasMore = visibleCount < DELIVERY_JOBS.length;
-  const pendingCount = Math.min(PAGE_SIZE, DELIVERY_JOBS.length - visibleCount);
+  useEffect(() => {
+    fetchJobs(1, false);
+  }, []);
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchJobs(nextPage, true);
+  };
+
+  const visibleJobs = jobs;
+  const hasMore = jobs.length < totalJobs;
+  const pendingCount = Math.min(PAGE_SIZE, totalJobs - jobs.length);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -287,7 +333,7 @@ export default function DeliveryPage() {
                 คลิกที่การ์ดเพื่อดูรูปภาพทั้งหมดของแต่ละงานจัดส่ง
               </p>
               <p className="text-slate-400 text-xs mt-2">
-                แสดง {Math.min(visibleCount, DELIVERY_JOBS.length)} จาก {DELIVERY_JOBS.length} งาน
+                แสดง {jobs.length} จาก {totalJobs} งาน
               </p>
             </div>
 
@@ -302,7 +348,7 @@ export default function DeliveryPage() {
                     ${idx === 4 ? "sm:col-span-2 lg:col-span-2" : ""}
                     ${newlyLoaded.has(idx) ? "animate-[fadeSlideUp_0.5s_ease_forwards]" : ""}
                   `}
-                  style={newlyLoaded.has(idx) ? { animationDelay: `${(idx - (visibleCount - pendingCount)) * 80}ms`, opacity: 0 } : {}}
+                  style={newlyLoaded.has(idx) ? { animationDelay: `${(idx - (jobs.length - lastBatchLen)) * 80}ms`, opacity: 0 } : {}}
                 >
                   {/* Cover image */}
                   <div className={`relative w-full overflow-hidden bg-slate-200
@@ -376,22 +422,32 @@ export default function DeliveryPage() {
               <div className="text-center mt-10">
                 <button
                   onClick={handleLoadMore}
-                  disabled={isLoading}
+                  disabled={isFetchingMore}
                   className="inline-flex items-center gap-2 px-8 py-3.5 bg-white border border-slate-200 hover:border-[var(--color-brand-blue)] hover:text-[var(--color-brand-blue)] text-slate-600 font-bold rounded-full shadow-sm hover:shadow-md transition-all duration-300 text-sm disabled:opacity-50"
                 >
-                  <Plus className="w-4 h-4" />
-                  ดูเพิ่มเติม ({DELIVERY_JOBS.length - visibleCount} งาน)
+                  {isFetchingMore ? (
+                    <>
+                      <div className="w-4 h-4 rounded-full border-2 border-slate-200 border-t-[var(--color-brand-blue)] animate-spin" />
+                      กำลังโหลด...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      ดูเพิ่มเติม ({totalJobs - jobs.length} งาน)
+                    </>
+                  )}
                 </button>
               </div>
             )}
 
-            {/* Loading spinner below grid */}
-            {isLoading && (
+            {/* Loading spinner below grid (initial load) */}
+            {isLoading && jobs.length === 0 && (
               <div className="flex flex-col items-center gap-3 mt-10">
                 <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-[var(--color-brand-blue)] animate-spin" />
-                <p className="text-slate-400 text-sm font-medium">กำลังโหลด...</p>
+                <p className="text-slate-400 text-sm font-medium">กำลังโหลดรายการจัดส่ง...</p>
               </div>
             )}
+      
           </div>
         </section>
 
@@ -414,12 +470,14 @@ export default function DeliveryPage() {
                 ทีมงานพร้อมให้คำปรึกษาเรื่องการจัดส่ง ค่าใช้จ่าย และระยะเวลา ติดต่อเราได้เลยทุกช่องทาง
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href={`tel:${COMPANY.phone}`}
+                <Link href={`tel:${COMPANY.phone}`}
                   className="inline-flex items-center gap-2.5 px-8 py-4 bg-[var(--color-brand-orange)] hover:bg-[var(--color-brand-orange-hover)] text-white font-bold rounded-full shadow-lg shadow-orange-500/30 transition-all duration-300 active:scale-95 text-sm">
                   <Phone className="w-4 h-4" />
                   โทร {COMPANY.phone}
-                </a>
-                <Link href="/contact"
+                </Link>
+                <Link href={COMPANY.lineUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                   className="inline-flex items-center gap-2.5 px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-bold rounded-full border border-white/20 transition-all duration-300 active:scale-95 text-sm">
                   ส่งข้อความถึงเรา
                 </Link>

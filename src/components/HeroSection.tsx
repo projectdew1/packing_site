@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Factory, Truck } from "lucide-react";
+import { COMPANY } from "@/lib/constants";
 
 export default function HeroSection() {
   return (
@@ -23,10 +24,11 @@ export default function HeroSection() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link href="#products" className="inline-flex justify-center items-center gap-2 bg-[var(--color-brand-blue)] hover:bg-[#003366] text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-0.5 whitespace-nowrap">
+            <Link href="/products" className="inline-flex justify-center items-center gap-2 bg-[var(--color-brand-blue)] hover:bg-[#003366] text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl shadow-blue-500/20 transition-all hover:-translate-y-0.5 whitespace-nowrap">
               ดูสินค้าทั้งหมด <ArrowRight className="w-5 h-5" />
             </Link>
-            <Link href="#consult" className="inline-flex justify-center items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-200 px-8 py-4 rounded-full font-bold text-lg transition-all hover:border-slate-300 whitespace-nowrap">
+            <Link href={COMPANY.lineUrl}     target="_blank"
+                rel="noopener noreferrer" className="inline-flex justify-center items-center gap-2 bg-white hover:bg-slate-50 text-slate-800 border-2 border-slate-200 px-8 py-4 rounded-full font-bold text-lg transition-all hover:border-slate-300 whitespace-nowrap">
               ปรึกษาผู้เชี่ยวชาญ
             </Link>
           </div>
@@ -47,7 +49,7 @@ export default function HeroSection() {
           <div className="absolute inset-0 bg-gradient-to-tr from-blue-100/40 to-transparent rounded-3xl transform rotate-3 scale-105" />
           <div className="relative w-full aspect-square md:aspect-auto md:h-full rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5 bg-white">
             <Image 
-              src="/hero_machine_1773729765118.png" 
+              src="/hero_logo.png" 
               alt="Industrial Packaging Machine"
               fill
               className="object-cover object-center"

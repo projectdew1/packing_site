@@ -1,70 +1,96 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ImageGallery from "@/components/ImageGallery";
+import ShareButtons from "@/components/ShareButtons";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarDays, Clock, ArrowLeft, BookOpen, Megaphone, Share2, ChevronRight } from "lucide-react";
-import { BLOG_POSTS, COMPANY } from "@/lib/constants";
+import { COMPANY, API_ROUTES, IMAGE_URL } from "@/lib/constants";
+
+if (process.env.NODE_ENV !== "production") {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
 
 interface BlogDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export function generateStaticParams() {
-  return BLOG_POSTS.map((post) => ({ slug: post.slug }));
+export async function generateStaticParams() {
+  try {
+    const res = await fetch(API_ROUTES.newsIds);
+    const data = await res.json();
+    if (data.status === 200 && data.items) {
+      return data.items.map((item: any) => ({ slug: item.id }));
+    }
+  } catch (e) {
+    console.error("Error fetching news IDs:", e);
+  }
+  return [];
 }
 
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const { slug } = await params;
-  const post = BLOG_POSTS.find((p) => p.slug === slug);
-
-  if (!post) return notFound();
-
-  // Get related posts (same category, exclude current)
-  const relatedPosts = BLOG_POSTS
-    .filter((p) => p.category === post.category && p.slug !== post.slug)
-    .slice(0, 3);
-
-  // All images for this post (main image + extras)
-  const allImages = post.images && post.images.length > 0
-    ? [post.image, ...post.images]
-    : [post.image];
-
-  // Simple markdown-like rendering: **bold** and line breaks
-  const renderContent = (content: string) => {
-    return content.split("\n\n").map((paragraph, idx) => {
-      if (paragraph.startsWith("**") && paragraph.endsWith("**")) {
-        return <h3 key={idx} className="text-2xl font-extrabold text-slate-900 mt-10 mb-4 tracking-tight">{paragraph.replace(/\*\*/g, "")}</h3>;
-      }
-      if (paragraph.startsWith("- ")) {
-        const items = paragraph.split("\n").filter(Boolean);
-        return (
-          <ul key={idx} className="space-y-2.5 my-6 ml-1">
-            {items.map((item, i) => (
-              <li key={i} className="flex items-start gap-3 text-slate-600 leading-relaxed text-lg">
-                <span className="mt-2.5 w-1.5 h-1.5 rounded-full bg-[var(--color-brand-blue)] shrink-0" />
-                {item.replace("- ", "")}
-              </li>
-            ))}
-          </ul>
-        );
-      }
-      // Handle inline bold
-      const parts = paragraph.split(/(\*\*.*?\*\*)/g);
-      return (
-        <p key={idx} className="text-lg text-slate-600 leading-[1.9] mb-6">
-          {parts.map((part, i) =>
-            part.startsWith("**") && part.endsWith("**") ? (
-              <strong key={i} className="text-slate-800 font-bold">{part.replace(/\*\*/g, "")}</strong>
-            ) : (
-              <span key={i}>{part}</span>
-            )
-          )}
-        </p>
-      );
+  
+  // Fetch specific post
+  let postData = null;
+  try {
+    const res = await fetch(`${API_ROUTES.newsDetail}?id=${slug}`, {
+      method: "POST"
     });
+    const data = await res.json();
+    if (data.status === 200 && data.items) {
+      postData = data.items;
+    }
+  } catch (e) {
+    console.error("Error fetching news detail:", e);
+  }
+
+  if (!postData) return notFound();
+
+  // Create formatted post object
+  const textLength = (postData.subtitle?.length || 0) + (postData.content?.length || 0);
+  const readTimeMin = Math.max(1, Math.ceil(textLength / 800));
+
+  const post = {
+    title: postData.title,
+    excerpt: postData.subtitle,
+    category: postData.typeNews === "ข่าวสาร" ? "news" : "article",
+    date: postData.createDate,
+    image: postData.localImage ? `${IMAGE_URL}${postData.localImage}` : "/product_machine_1773729790893.png",
+    content: postData.content,
+    readTime: `${readTimeMin} นาที`
   };
+
+  const imageGallery = postData.image 
+    ? postData.image.map((img: any) => `${IMAGE_URL}${img.local}`) 
+    : [];
+
+  const allImages = [post.image, ...imageGallery];
+
+  // Fetch related posts
+  let relatedPosts: any[] = [];
+  try {
+    const typeQuery = postData.typeNews === "ข่าวสาร" ? "news" : "article";
+    const relatedRes = await fetch(`${API_ROUTES.news}?pageNumber=1&pageSize=4&type=${typeQuery}`, {
+      method: "POST"
+    });
+    const relatedData = await relatedRes.json();
+    
+    if (relatedData.items) {
+      relatedPosts = relatedData.items
+        .filter((rp: any) => rp.id !== slug)
+        .slice(0, 3)
+        .map((rp: any) => ({
+          slug: rp.id,
+          title: rp.title,
+          date: rp.createDate,
+          image: rp.localImage ? `${IMAGE_URL}${rp.localImage}` : "/product_machine_1773729790893.png",
+        }));
+    }
+  } catch (e) {
+    console.error("Failed to fetch related posts", e);
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
@@ -126,7 +152,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
         {/* ══════════════════════════════════════════
             FEATURED IMAGE  –  Large hero image
         ══════════════════════════════════════════ */}
-        <section className="relative -mt-4 z-10 mb-8 lg:mb-12">
+        <section className="relative -mt-4 z-10 ">
           <div className="container mx-auto px-4 lg:px-8 max-w-5xl">
             <div className="relative aspect-[16/8] md:aspect-[16/7] bg-white rounded-3xl overflow-hidden shadow-2xl shadow-slate-300/40 ring-1 ring-black/[0.05]">
               <Image
@@ -151,9 +177,10 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
               <article className="lg:col-span-8">
                 <div className="bg-white rounded-3xl shadow-lg shadow-slate-200/40 ring-1 ring-slate-100 p-8 md:p-12 lg:p-14">
                   {/* Content */}
-                  <div className="max-w-none">
-                    {renderContent(post.content)}
-                  </div>
+                  <div 
+                    className="max-w-none text-slate-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: post.content }} 
+                  />
 
                   {/* ── Image Gallery ── */}
                   {allImages.length > 1 && (
@@ -161,7 +188,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                   )}
 
                   {/* Divider if no gallery */}
-                  {allImages.length === 1 && (
+                  {allImages.length > 1 && (
                     <div className="mt-10 pt-8 border-t border-slate-100" />
                   )}
                 </div>
@@ -208,17 +235,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
                       <Share2 className="w-4 h-4" />
                       <span className="font-semibold">แชร์บทความนี้</span>
                     </div>
-                    <div className="flex gap-2">
-                      <button className="flex-1 py-2.5 bg-[#1877F2] hover:bg-[#1565C0] text-white text-xs font-bold rounded-xl transition-colors">
-                        Facebook
-                      </button>
-                      <button className="flex-1 py-2.5 bg-[#06C755] hover:bg-[#05a648] text-white text-xs font-bold rounded-xl transition-colors">
-                        LINE
-                      </button>
-                      <button className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold rounded-xl transition-colors">
-                        คัดลอก
-                      </button>
-                    </div>
+                    <ShareButtons title={post.title} />
                   </div>
 
                   {/* Related Posts */}

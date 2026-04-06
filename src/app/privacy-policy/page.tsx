@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ShieldCheck } from "lucide-react";
+import { COMPANY } from "@/lib/constants";
 
 export default function PrivacyPolicyPage() {
   return (
@@ -77,12 +78,12 @@ export default function PrivacyPolicyPage() {
               <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 mt-4">
                 <p className="font-bold text-slate-800">บริษัท เคเอ็มเอส แมชชีนเนอรี่ จำกัด</p>
                 <p>เบอร์โทรศัพท์: 034-116655, 095-456-5550</p>
-                <p>อีเมล: info@kmsmachinery.com</p>
+                <p>อีเมล: {COMPANY.email}</p>
               </div>
             </div>
             
             <div className="mt-12 pt-8 border-t border-slate-100 text-sm text-slate-400">
-              แก้ไขล่าสุด: 17 มีนาคม 2026
+              แก้ไขล่าสุด:  เมษายน 2568
             </div>
           </div>
           

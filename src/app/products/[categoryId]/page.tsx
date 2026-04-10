@@ -38,6 +38,7 @@ return data;
 }
 
 export async function generateStaticParams() {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   try {
     const res = await fetch(API_ROUTES.categories);
     const data: CategoryApiResponse = await res.json();

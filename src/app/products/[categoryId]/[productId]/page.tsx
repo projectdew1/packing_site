@@ -26,6 +26,7 @@ export const dynamicParams = false; // Ensure we only build what is generated
 
 /* ── Static Params for export mode ── */
 export async function generateStaticParams() {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   try {
     const res = await fetch(API_ROUTES.allMachineParams);
     const data = await res.json();

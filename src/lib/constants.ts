@@ -3,7 +3,7 @@ import {
 } from "lucide-react";
 
 // export const API_URL = "https://kmspacking.com:5003";
-export const API_URL = "https://localhost:5001";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://kmspacking.com:5003";
 export const IMAGE_URL = "https://kmspacking.com:5003";
 
 export const API_PARAMS = {
@@ -151,6 +151,7 @@ export const RECOMMENDED_PRODUCTS: ProductItem[] = [
 // ===================================
 // About Page Data
 // ===================================
+
 export interface StatItem {
   value: string;
   label: string;

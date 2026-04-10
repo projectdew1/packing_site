@@ -52,6 +52,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ categoryId: string }> }) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   const p = await params;
   const category = await getCategory(p.categoryId);
   if (!category) return { title: "Category Not Found" };

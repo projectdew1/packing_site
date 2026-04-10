@@ -39,6 +39,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   const { slug } = await params;
   let postData = null;
   try {

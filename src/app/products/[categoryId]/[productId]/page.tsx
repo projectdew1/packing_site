@@ -68,6 +68,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ categoryId: string; productId: string }>;
 }) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   const p = await params;
   const product = await getProductDetail(p.productId);
   if (!product) return { title: "Product Not Found" };

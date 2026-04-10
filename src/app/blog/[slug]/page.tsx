@@ -12,6 +12,10 @@ if (process.env.NODE_ENV !== "production") {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 }
 
+export const dynamic = 'force-static';
+export const dynamicParams = false;
+
+
 interface BlogDetailPageProps {
   params: Promise<{ slug: string }>;
 }

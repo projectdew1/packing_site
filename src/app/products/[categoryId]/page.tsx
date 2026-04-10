@@ -7,6 +7,9 @@ import { IMAGE_URL, API_ROUTES, API_PARAMS } from "@/lib/constants";
 import { ApiCategory, CategoryApiResponse } from "@/models/category";
 import { CategoryProductAPIResponse, Item, Machine } from "@/models/categoryProduct";
 
+export const dynamic = 'force-static';
+export const dynamicParams = false;
+
 async function getCategory(id: string): Promise<ApiCategory | undefined> {
   try {
     const res = await fetch(API_ROUTES.categories, {

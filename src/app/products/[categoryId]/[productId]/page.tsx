@@ -1,9 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-
-if (process.env.NODE_ENV !== "production") {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-}
 import {
   ChevronRight,
   Phone,
@@ -20,6 +16,14 @@ import { IMAGE_URL, API_ROUTES, API_PARAMS, COMPANY } from "@/lib/constants";
 import { ProductDetailAPIResponse, ProductDetail } from "@/models/productDetail";
 import { ProductHeroImage, ProductImageGrid } from "@/components/ProductImageLightbox";
 
+if (process.env.NODE_ENV !== "production") {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
+
+export const dynamic = 'force-static';
+export const dynamicParams = false; // Ensure we only build what is generated
+
+
 /* ── Static Params for export mode ── */
 export async function generateStaticParams() {
   try {
@@ -27,10 +31,12 @@ export async function generateStaticParams() {
     const data = await res.json();
     
     if (data?.items) {
-      return data.items.map((item: { param: string }) => {
-        const [categoryId, productId] = item.param.split("/");
-        return { categoryId, productId };
-      });
+      return data.items
+        .filter((item: { param: string }) => item.param && item.param.includes("/"))
+        .map((item: { param: string }) => {
+          const [categoryId, productId] = item.param.split("/");
+          return { categoryId, productId };
+        });
     }
     return [];
   } catch (err) {

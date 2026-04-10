@@ -1,14 +1,14 @@
-import React from "react";
-import Link from "next/link";
-import { ChevronRight, Package } from "lucide-react";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { IMAGE_URL, API_ROUTES } from "@/lib/constants";
+import Navbar from "@/components/Navbar";
+import { API_ROUTES, IMAGE_URL } from "@/lib/constants";
 import { ApiCategory, CategoryApiResponse } from "@/models/category";
+import { ChevronRight, Package } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
-export const metadata = {
-  title: "ผลิตภัณฑ์ - KMS Machinery",
-  description: "หมวดหมู่ผลิตภัณฑ์เครื่องบรรจุภัณฑ์อุตสาหกรรม จาก KMS Machinery",
+export const metadata: Metadata = {
+  title: "ผลิตภัณฑ์เครื่องจักร",
+  description: "ศูนย์รวมเครื่องบรรจุภัณฑ์อุตสาหกรรมทุกประเภท ทั้งเครื่องบรรจุซอง เครื่องห่อแนวนอน เครื่องสไลด์เนื้อ และอื่นๆ อีกมากมาย",
 };
 
 export default async function ProductsPage() {

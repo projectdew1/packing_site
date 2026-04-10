@@ -18,8 +18,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { IMAGE_URL, API_ROUTES, API_PARAMS, COMPANY } from "@/lib/constants";
 import { ProductDetailAPIResponse, ProductDetail } from "@/models/productDetail";
-import { CategoryApiResponse } from "@/models/category";
-import { CategoryProductAPIResponse } from "@/models/categoryProduct";
 import { ProductHeroImage, ProductImageGrid } from "@/components/ProductImageLightbox";
 
 /* ── Static Params for export mode ── */
@@ -69,6 +67,14 @@ export async function generateMetadata({
   return {
     title: `${product.items.machineName} - KMS Machinery`,
     description: product.seo || `รายละเอียดสินค้า ${product.items.machineName}`,
+    openGraph: {
+      images: [product.items.localImage ? `${IMAGE_URL}${product.items.localImage}` : "/web_kms.png"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      description: product.seo || `รายละเอียดสินค้า ${product.items.machineName}`,
+      images: [product.items.localImage ? `${IMAGE_URL}${product.items.localImage}` : "/web_kms.png"],
+    },
   };
 }
 
@@ -120,8 +126,34 @@ export default async function ProductDetailPage({
 
   const decryptedCategoryId = decodeURIComponent(p.categoryId);
 
+  // JSON-LD for Search Engines
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.machineName,
+    "image": allImages.map(img => img.src),
+    "description": product.explain?.name || product.machineName,
+    "sku": product.itemsCode || product.machineId.toString(),
+    "brand": {
+      "@type": "Brand",
+      "name": "KMS MACHINERY"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": `https://kmspacking.com/products/${p.categoryId}/${p.productId}`,
+      "priceCurrency": "THB",
+      "price": product.discount > 0 ? product.discount : (product.price > 0 ? product.price : undefined),
+      "availability": isSoldout ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
       <Navbar />
       <main className="flex-1 bg-slate-50 pb-16">
         {/* Breadcrumb */}

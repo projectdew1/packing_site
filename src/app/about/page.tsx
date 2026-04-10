@@ -2,7 +2,14 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Factory, Users, Award, Handshake, Target, TrendingUp, CheckCircle2 } from "lucide-react";
 import { STATS, CORE_VALUES, WHY_CHOOSE_US, COMPANY } from "@/lib/constants";
+import Image from "next/image";
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "เกี่ยวกับเรา",
+  description: "รู้จักกับ KMS MACHINERY ผู้เชี่ยวชาญด้านเครื่องบรรจุภัณฑ์อุตสาหกรรมครบวงจร ดำเนินกิจการด้วยความซื่อสัตย์และมุ่งมั่นส่งมอบคุณภาพ",
+};
 
 const statIconMap: Record<string, ReactNode> = {
   Award: <Award className="w-6 h-6" />,
@@ -86,10 +93,12 @@ export default function AboutPage() {
               <div className="relative">
                 <div className="absolute -inset-4 bg-gradient-to-tr from-blue-100/60 to-orange-50/60 rounded-3xl rotate-2" />
                 <div className="relative bg-slate-100 rounded-2xl aspect-[4/3] flex items-center justify-center overflow-hidden ring-1 ring-black/5 shadow-xl">
-                  <div className="text-center p-8">
-                    <Factory className="w-16 h-16 text-[var(--color-brand-blue)] mx-auto mb-4 opacity-50" />
-                    <p className="text-slate-400 font-medium">{COMPANY.name} Factory</p>
-                  </div>
+                  <Image
+                    src="/about.png"
+                    alt="KMS Packing Factory"
+                    fill
+                    className="object-cover"
+                  />
                 </div>
               </div>
             </div>

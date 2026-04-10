@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "นโยบายความเป็นส่วนตัว",
+  description: "นโยบายความเป็นส่วนตัวของ KMS MACHINERY เกี่ยวกับการจัดเก็บและคุ้มครองข้อมูลส่วนบุคคลของคุณ",
+};
+
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ShieldCheck } from "lucide-react";

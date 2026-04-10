@@ -29,6 +29,39 @@ export async function generateStaticParams() {
   return [];
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  let postData = null;
+  try {
+    const res = await fetch(`${API_ROUTES.newsDetail}?id=${slug}`, {
+      method: "POST"
+    });
+    const data = await res.json();
+    if (data.status === 200 && data.items) {
+      postData = data.items;
+    }
+  } catch (e) {}
+
+  if (!postData) return { title: "Blog Post Not Found" };
+
+  return {
+    title: postData.title,
+    description: postData.subtitle || `อ่านบทความเรื่อง ${postData.title}`,
+    openGraph: {
+      images: [postData.localImage ? `${IMAGE_URL}${postData.localImage}` : "/web_kms.png"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      description: postData.subtitle || `อ่านบทความเรื่อง ${postData.title}`,
+      images: [postData.localImage ? `${IMAGE_URL}${postData.localImage}` : "/web_kms.png"],
+    },
+  };
+}
+
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const { slug } = await params;
   
@@ -92,8 +125,26 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
     console.error("Failed to fetch related posts", e);
   }
 
+  const blogJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": post.title,
+    "image": [post.image],
+    "datePublished": post.date,
+    "dateModified": post.date,
+    "author": {
+      "@type": "Organization",
+      "name": "KMS MACHINERY",
+      "url": "https://kmspacking.com"
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }}
+      />
       <Navbar />
       <main className="flex-1">
 

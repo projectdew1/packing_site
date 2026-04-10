@@ -54,6 +54,13 @@ export async function generateMetadata({ params }: { params: Promise<{ categoryI
   return {
     title: `${category.name} - KMS Machinery`,
     description: `หมวดหมู่สินค้า ${category.name}`,
+    openGraph: {
+      images: [category.localImage ? `${IMAGE_URL}${category.localImage}` : "/web_kms.png"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: [category.localImage ? `${IMAGE_URL}${category.localImage}` : "/web_kms.png"],
+    },
   };
 }
 

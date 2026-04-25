@@ -94,10 +94,11 @@ export default function AboutPage() {
                 <div className="absolute -inset-4 bg-gradient-to-tr from-blue-100/60 to-orange-50/60 rounded-3xl rotate-2" />
                 <div className="relative bg-slate-100 rounded-2xl aspect-[4/3] flex items-center justify-center overflow-hidden ring-1 ring-black/5 shadow-xl">
                   <Image
-                    src="/about.png"
+                    src="/about.jpg"
                     alt="KMS Packing Factory"
                     fill
                     className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
                   />
                 </div>
               </div>

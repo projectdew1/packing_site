@@ -126,6 +126,8 @@ export default function RecommendedProducts() {
                       alt={product.machineName}
                       fill
                       className="object-contain p-6 group-hover:scale-110 transition-transform duration-700 ease-out z-10"
+                      sizes="(max-width: 480px) 80vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      loading="lazy"
                     />
                     {/* HOT Badge */}
                     <div className="absolute top-4 right-4 z-20">

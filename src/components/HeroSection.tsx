@@ -49,10 +49,11 @@ export default function HeroSection() {
           <div className="absolute inset-0 bg-gradient-to-tr from-blue-100/40 to-transparent rounded-3xl transform rotate-3 scale-105" />
           <div className="relative w-full aspect-square md:aspect-auto md:h-full rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5 bg-white">
             <Image 
-              src="/hero_logo.png" 
+              src="/hero_logo.jpg" 
               alt="Industrial Packaging Machine"
               fill
               className="object-cover object-center"
+              sizes="(max-width: 1024px) 100vw, 50vw"
               priority
             />
           </div>

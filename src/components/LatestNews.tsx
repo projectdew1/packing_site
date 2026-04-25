@@ -107,6 +107,8 @@ export default function LatestNews() {
                   alt={featuredPost.title}
                   fill
                   className="object-contain p-6 group-hover:scale-105 transition-transform duration-700"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  loading="lazy"
                 />
                 {/* Category Badge */}
                 <div className="absolute top-5 left-5">
@@ -164,6 +166,8 @@ export default function LatestNews() {
                     alt={post.title}
                     fill
                     className="object-contain p-4 group-hover:scale-105 transition-transform duration-700"
+                    sizes="(max-width: 640px) 100vw, 224px"
+                    loading="lazy"
                   />
                   {/* Category Badge */}
                   <div className="absolute top-3 left-3">

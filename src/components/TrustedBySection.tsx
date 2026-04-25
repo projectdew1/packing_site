@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 const CLIENT_LOGOS = Array.from({ length: 13 }, (_, i) => ({
-  src: `/customer/customer${i + 1}.png`,
+  src: `/customer/customer${i + 1}.jpg`,
   alt: `customer${i + 1}`,
 }));
 

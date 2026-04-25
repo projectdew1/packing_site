@@ -104,7 +104,7 @@ export default function Navbar() {
                          {categories.map((c) => (
                            <Link key={c.id} href={`/products/${c.enID}`} className="flex items-center gap-2 p-1 hover:bg-slate-50 rounded-lg transition-colors group/item shrink-0">
                              <div className="w-7 h-7 rounded bg-slate-50 flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-50/50">
-                               <img src={c.localImage ? `${IMAGE_URL}${c.localImage}` : "/product_machine_1773729790893.png"} alt={c.name} className="max-w-full max-h-full object-contain mix-blend-multiply group-hover/item:scale-110 transition-transform" />
+                               <img src={c.localImage ? `${IMAGE_URL}${c.localImage}` : "/product_machine_1773729790893.png"} alt={c.name} loading="lazy" className="max-w-full max-h-full object-contain mix-blend-multiply group-hover/item:scale-110 transition-transform" />
                              </div>
                              <span className="text-[10.5px] text-slate-600 font-medium line-clamp-1 leading-tight group-hover/item:text-[var(--color-brand-blue)] transition-colors">{c.name}</span>
                            </Link>

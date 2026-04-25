@@ -120,6 +120,8 @@ function MachineCard({ machine, categoryId }: { machine: Machine; categoryId: st
         <img
           src={machine.localImage ? `${IMAGE_URL}${machine.localImage}` : "/product_machine_1773729790893.png"}
           alt={machine.machineName}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out relative z-10 mix-blend-multiply"
         />
         {/* Hover quick-view */}

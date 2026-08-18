@@ -22,9 +22,10 @@ FROM nginx:alpine
 COPY ./.nginx/nginx.conf /etc/nginx/nginx.conf
 
 ## ssl สร้างโฟร์เดอร์และย้ายไฟล์ไปเซิฟเวอร์
-RUN mkdir /etc/nginx/ssl 
-COPY ./SSL/cert.crt /etc/nginx/ssl/cert.crt
-COPY ./SSL/private-key.key /etc/nginx/ssl/private-key.key
+## ssl - ใช้ certificates จาก /home/cer
+RUN mkdir -p /etc/nginx/ssl 
+COPY /home/cer/cert.crt /etc/nginx/ssl/cert.crt
+COPY /home/cer/private-key.key /etc/nginx/ssl/private-key.key
 
 ## Remove default nginx index page
 RUN rm -rf /usr/share/nginx/html/*

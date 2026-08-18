@@ -37,4 +37,4 @@ jobs:
             docker stop pack || true
             docker rm pack || true
             docker pull ${{ secrets.DOCKERHUB_FE }}
-            docker run -d --name pack -p 443:443 -p 80:80 --restart=always ${{ secrets.DOCKERHUB_FE }}
+            docker run -d --name pack -p 443:443 -p 80:80 --restart=always -v /home/cer/cert.crt:/etc/nginx/ssl/cert.crt:ro -v /home/cer/private-key.key:/etc/nginx/ssl/private-key.key:ro ${{ secrets.DOCKERHUB_FE }}
